@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  
+  # api:
+  #   build:
+  #     context: ./api
+  #     target: flowers-api-dev # only use the dev step
+  #   container_name: flowers-api
+  #   image: flowers-api
+  #   init: true
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./api:/api
+  #   networks:
+  #     - flowers
+
+  db:
+    build:
+      context: ./db
+    container_name: flowers-db
+    image: flowers-db
+    networks:
+      - flowers
+    command: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:delegated
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      - POSTGRES_PASSWORD=password
+
+networks:
+  flowers:
+    name: flowers
+
+volumes:
+  postgres-data:

@@ -1,0 +1,3 @@
+FROM postgres:12 as flowers-db
+
+ENV POSTGRES_DB flowers
