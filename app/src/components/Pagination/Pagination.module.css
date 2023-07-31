@@ -1,0 +1,14 @@
+.pagination {
+  margin: 32px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button {
+  font-size: 18px;
+  color: #6b6c7e;
+  border-radius: 50%;
+  border: none;
+  background: #e7e7ed;
+}

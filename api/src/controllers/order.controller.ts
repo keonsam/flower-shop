@@ -1,66 +1,67 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { authenticate } from "../middleware/authentication";
-// import { Pagination, Sort } from "../types/pagination";
 import { validate } from "../middleware/validation";
 import {
-  customerSchema,
-  getSchema,
+  getCustomersSchema,
   idSchema,
   orderSchema,
 } from "../types/schema";
 import { authorization } from "../middleware/authorization";
 import { Role } from "../types/credential";
 import OrderService from "../services/order.service";
-import { AddOrderRequest } from "../types/Orders";
+import { AddOrderRequest, OrderData } from "../types/Orders";
+import { Pagination, Sort } from "../types/pagination";
 
 const router = Router();
 
-// const customerService = new CustomerService();
 const orderService = new OrderService();
 
-// router.get(
-//   "/orders",
-//   validate(getSchema, "query"),
-//   authenticate,
-//   authorization([Role.ADMIN]),
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     req.log.info("Get Customers");
-//     try {
-//       const { query } = req;
+router.get(
+  "/orders",
+  validate(getCustomersSchema, "query"),
+  authenticate,
+  authorization([Role.ADMIN]),
+  async (req: Request, res: Response, next: NextFunction) => {
+    req.log.info("Get Orders Request");
+    try {
+      const { query } = req;
 
-//       const pagination: Pagination = {
-//         pageNumber: Number(query.pageNumber),
-//         pageSize: Number(query.pageSize),
-//         sort: query.sort as Sort,
-//       };
+      const pagination: Pagination = {
+        pageNumber: Number(query.pageNumber),
+        pageSize: Number(query.pageSize),
+        sort: query.sort as Sort,
+        search: String(query.search || ""),
+      };
 
-//       //   const customers = await customerService.getCustomers(pagination);
-//       res.status(200).json(customers);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      const customerId = String(query.customerId || "")
 
-// router.get(
-//   "/orders/:id",
-//   validate(idSchema, "params"),
-//   authenticate,
-//   authorization([Role.ADMIN]),
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     req.log.info("Get Order");
+      const customers = await orderService.getOrders(pagination, customerId);
+      res.status(200).json(customers);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
-//     try {
-//       const { params } = req;
+router.get(
+  "/orders/:id",
+  validate(idSchema, "params"),
+  authenticate,
+  authorization([Role.ADMIN]),
+  async (req: Request, res: Response, next: NextFunction) => {
+    req.log.info("Get Order Request");
 
-//       const order = await orderService.getOrder(params.id);
+    try {
+      const { params } = req;
 
-//       res.status(200).json(order);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      const order = await orderService.getOrder(params.id);
+
+      res.status(200).json(order);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.post(
   "/orders",
@@ -72,17 +73,17 @@ router.post(
     res: Response,
     next: NextFunction
   ) => {
-    req.log.info("Add Order");
+    req.log.info("Add Order Request");
 
     try {
       const { user, body } = req;
 
       const orderData = {
-        customerId: body.customerId,
+        ...body,
         createdBy: user.credentialId,
       };
 
-      const order = await orderService.addOrder(orderData, body.items);
+      const order = await orderService.addOrder(orderData);
       res.status(201).json(order);
     } catch (error) {
       next(error);
@@ -90,32 +91,29 @@ router.post(
   }
 );
 
-// router.put(
-//   "/orders/:id",
-//   validate(idSchema, "params"),
-//   validate(customerSchema, "body"),
-//   authenticate,
-//   authorization([Role.ADMIN]),
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     req.log.info("Update Event Request");
+router.put(
+  "/orders/:id",
+  validate(idSchema, "params"),
+  validate(orderSchema, "body"),
+  authenticate,
+  authorization([Role.ADMIN]),
+  async (req: Request, res: Response, next: NextFunction) => {
+    req.log.info("Update Order Request");
 
-//     try {
-//       const { params, body } = req;
+    try {
+      const { params, body } = req;
 
-//       const customerData: CustomerData = {
-//         ...body,
-//       };
+      const orderData: OrderData = {
+        ...body,
+      };
 
-//       const event = await customerService.updateCustomer(
-//         params.id,
-//         customerData
-//       );
+      const order = await orderService.updateOrder(params.id, orderData);
 
-//       res.status(200).json(event);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      res.status(200).json(order);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 export default router;

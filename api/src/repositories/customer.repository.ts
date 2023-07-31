@@ -6,14 +6,41 @@ import { Customer, CustomerData, CustomerTable } from "../types/Customer";
 import { Pagination } from "../types/pagination";
 
 export default class CustomerRepository {
+  static mapDbCustomer(dbCustomer: CustomerTable): Customer {
+    return {
+      id: dbCustomer.id,
+      email: dbCustomer.email,
+      name: dbCustomer.name,
+      location: dbCustomer.location,
+      phoneNumber: dbCustomer.phone_number,
+      createdBy: dbCustomer.created_by,
+      createdAt: dbCustomer.created_at,
+      updatedAt: dbCustomer.updated_at,
+    };
+  }
+
   async getCustomers(pagination: Pagination) {
-    const { pageNumber, pageSize, sort } = pagination;
+    const { pageNumber, pageSize, sort, search } = pagination;
+
+    // count number of rows
+    const [countObj] = await db<CustomerTable>(CUSTOMER_TABLE_NAME).count("id");
+
+    const total = Number(countObj.count || 0);
+
+    // get records
     const customers = await db<CustomerTable>(CUSTOMER_TABLE_NAME)
       .select("*")
-      .where({
+      .where((qb) => {
+        if (search) {
+          const searchTerm = `%${search}%}`;
+          qb.whereILike("name", searchTerm)
+            .orWhereILike("email", searchTerm)
+            .orWhereILike("phone_number", searchTerm)
+            .orWhereILike("location", searchTerm);
+        }
       })
-      .limit(pagination.pageSize)
-      .offset((pageNumber - 1) * pageSize)
+      .limit(pagination.pageSize || total)
+      .offset(pageNumber ?(pageNumber - 1) * pageSize: 0)
       .orderBy("created_at", sort);
 
     logger.info(
@@ -21,7 +48,10 @@ export default class CustomerRepository {
       "Customers retrieved"
     );
 
-    return customers.map(this.mapDbEvent);
+    return {
+      items: customers.map(CustomerRepository.mapDbCustomer),
+      total,
+    };
   }
 
   async getCustomer(id: string) {
@@ -36,12 +66,9 @@ export default class CustomerRepository {
       throw new NotFoundError(`No customer found for id: ${id}`);
     }
 
-    logger.info(
-      { resultId: customer.id },
-      "Customer retrieved"
-    );
+    logger.info({ resultId: customer.id }, "Customer retrieved");
 
-    return this.mapDbEvent(customer);
+    return CustomerRepository.mapDbCustomer(customer);
   }
 
   async addCustomer(customerData: CustomerData) {
@@ -57,7 +84,7 @@ export default class CustomerRepository {
 
     logger.info({ id: customer.id }, "Customer created");
 
-    return this.mapDbEvent(customer);
+    return CustomerRepository.mapDbCustomer(customer);
   }
 
   async updateCustomer(id: string, customerData: CustomerData) {
@@ -77,7 +104,7 @@ export default class CustomerRepository {
 
     logger.info({ id: customer.id }, "Customer updated");
 
-    return this.mapDbEvent(customer);
+    return CustomerRepository.mapDbCustomer(customer);
   }
 
   async deleteCustomer(id: string) {
@@ -87,21 +114,8 @@ export default class CustomerRepository {
       })
       .del();
 
-    logger.info({ result, }, "Customer deleted");
+    logger.info({ result }, "Customer deleted");
 
     return result;
-  }
-
-  private mapDbEvent(dbCustomer: CustomerTable): Customer {
-    return {
-      id: dbCustomer.id,
-      email: dbCustomer.email,
-      name: dbCustomer.name,
-      location: dbCustomer.location,
-      phoneNumber: dbCustomer.phone_number,
-      createdBy: dbCustomer.created_by,
-      createdAt: dbCustomer.created_at,
-      updatedAt: dbCustomer.updated_at,
-    };
   }
 }

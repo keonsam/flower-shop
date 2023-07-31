@@ -10,7 +10,7 @@ export const db: Knex = knex({
     directory: path.resolve(__dirname, "./migrations"),
   },
   seeds: {
-    directory: "./seeds",
+    directory: path.resolve(__dirname, "./seeds"),
   },
 });
 
@@ -22,4 +22,7 @@ export async function initDb(): Promise<void> {
 
   logger.info("Running database migrations");
   await db.migrate.latest();
+
+  logger.info("Running database seeds");
+  await db.seed.run();
 }

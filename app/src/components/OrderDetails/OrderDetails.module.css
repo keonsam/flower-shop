@@ -1,0 +1,35 @@
+.orderList {
+  padding: 0;
+  margin: 0;
+  max-height: 150px;
+  overflow: scroll;
+}
+
+.orderItems {
+  list-style: none;
+  display: flex;
+}
+
+.orderQuantity {
+  width: 75px;
+}
+
+.orderName {
+  flex: 1;
+}
+
+.orderPrice {
+  flex: 1;
+}
+
+.total {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.totalText {
+  margin: 0 9px 0 0;
+  color: crimson;
+}
+

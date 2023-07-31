@@ -1,0 +1,10 @@
+.details {
+    margin-bottom: 48px;
+}
+
+.tableHead {
+  display: flex;
+  justify-content: space-between;
+  align-self: center;
+  margin-bottom: 24px;
+}

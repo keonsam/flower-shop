@@ -5,10 +5,18 @@ import { NotFoundError } from "../types/ApplicationError";
 import { Flower, FlowerTable } from "../types/Flower";
 
 export default class FlowerRepository {
+  async getFlowers() {
+    const flowers = await db<FlowerTable>(FLOWER_TABLE_NAME).select("*");
+
+    logger.info({ resultId: flowers[0]?.id }, "Flowers retrieved");
+
+    return flowers.map(this.mapDbEvent);
+  }
+
   async getFlowersByIds(ids: string[]) {
     const flowers = await db<FlowerTable>(FLOWER_TABLE_NAME)
       .select("*")
-      .whereIn("id", ids)
+      .whereIn("id", ids);
 
     if (!flowers || flowers.length == 0) {
       throw new NotFoundError(`No flowers for ids: ${ids}`);

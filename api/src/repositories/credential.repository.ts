@@ -32,10 +32,7 @@ export default class CredentialRepository {
     return this.mapDbCredential(credential);
   }
 
-  async createCredential({
-    username,
-    password,
-  }: CreateCredential) {
+  async createCredential({ username, password }: CreateCredential) {
     const [credential] = await db<CredentialTable>(CREDENTIAL_TABLE_NAME)
       .insert({
         username,

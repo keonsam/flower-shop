@@ -24,8 +24,7 @@ export async function up(knex: Knex): Promise<void> {
     table
       .enum("status", ["pending", "shipped", "delivered", "canceled"])
       .notNullable();
-    table.timestamp("estimate_delivery", { useTz: true });
-    table.timestamp("delivered_at", { useTz: true });
+    table.timestamp("delivery_time", { useTz: true }).notNullable();
     table
       .uuid("created_by")
       .notNullable()

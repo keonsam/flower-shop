@@ -14,6 +14,10 @@ export default class CredentialService {
     this.jwtService = new JWTService();
   }
 
+  static async hashPassword(password: string) {
+    return bcrypt.hash(password, 10);
+  }
+
   async register(registerData: Register) {
     const { username, password, role } = registerData;
 
@@ -25,10 +29,9 @@ export default class CredentialService {
       throw new ConflictError("User already exist with that username.");
     }
 
-    // CREATE CREDENTIAL
-    const hashedPassword = await bcrypt.hash(password, 10);
-    logger.info(`Register user hashedPassword: ${hashedPassword}`);
+    const hashedPassword = await CredentialService.hashPassword(password);
 
+    // CREATE CREDENTIAL
     return await this.credentialRepository.createCredential({
       username,
       password: hashedPassword,
@@ -45,16 +48,14 @@ export default class CredentialService {
     );
 
     if (!credential?.id) {
-      throw new UnAuthorizedError(
-        `User does not exist with username: ${username}`
-      );
+      throw new UnAuthorizedError(`Username does not exist`);
     }
 
     // verify password
     const valid = await bcrypt.compare(password, credential.password);
 
     if (!valid) {
-      throw new UnAuthorizedError(`Invalid password: ${password}`);
+      throw new UnAuthorizedError("Invalid password");
     }
 
     // generate jwt

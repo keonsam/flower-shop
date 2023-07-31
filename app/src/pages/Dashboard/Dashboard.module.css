@@ -1,0 +1,23 @@
+.container {
+    display: flex;
+    gap: 24px
+}
+
+.item {
+    background: #fff;
+    border-radius: 8px;
+    flex: 1;
+    padding: 24px;
+}
+
+.title {
+    font-weight: normal;
+    font-size: 16px;
+    letter-spacing: 0.15px;
+}
+
+.total {
+    font-size: 48px;
+    font-weight: normal;
+    text-align: center;
+}

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { OrderStatus } from "./Orders";
 
 export const authSchema = Joi.object({
   username: Joi.string().email().required(),
@@ -7,8 +8,8 @@ export const authSchema = Joi.object({
 
 export const customerSchema = Joi.object({
   name: Joi.string().trim().min(1).required(),
-  email: Joi.string().email(),
-  phoneNumber: Joi.string().trim().min(12),
+  email: Joi.string().allow("").email(),
+  phoneNumber: Joi.string().allow("").trim().min(10),
   location: Joi.string().trim().min(1).required(),
 });
 
@@ -17,18 +18,32 @@ export const idSchema = Joi.object({
 });
 
 export const getSchema = Joi.object({
-  pageNumber: Joi.number().min(1).required(),
-  pageSize: Joi.number().min(1).required(),
-  sort: Joi.string().allow("asc", "desc").only().required(),
+  pageNumber: Joi.number().min(1),
+  pageSize: Joi.number().min(1),
+  sort: Joi.string().allow("asc", "desc").only(),
+  search: Joi.string().trim(),
 });
 
 
-// order 
+export const getCustomersSchema = Joi.object({
+  pageNumber: Joi.number().min(1),
+  pageSize: Joi.number().min(1),
+  sort: Joi.string().allow("asc", "desc").only(),
+  search: Joi.string().trim(),
+  customerId: Joi.string().trim().uuid()
+});
 
+// order
 export const orderSchema = Joi.object({
   customerId: Joi.string().uuid().required(),
-  items: Joi.array().items(Joi.object({
-    id: Joi.string().uuid().required(),
-    quantity: Joi.number().min(1),
-  }))
-})
+  deliveryTime: Joi.string().isoDate().required(),
+  status: Joi.string().allow(...Object.values(OrderStatus)).only(),
+  items: Joi.array()
+    .items(
+      Joi.object({
+        flowerId: Joi.string().uuid().required(),
+        quantity: Joi.number().min(1),
+      })
+    )
+    .min(1),
+});

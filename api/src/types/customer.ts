@@ -18,3 +18,5 @@ export type CustomerTable = BusinessEntityTable & {
   phone_number?: string;
   created_by: string;
 };
+
+

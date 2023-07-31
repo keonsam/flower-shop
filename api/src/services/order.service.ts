@@ -1,7 +1,7 @@
-import CustomerRepository from "../repositories/customer.repository";
 import FlowerRepository from "../repositories/flower.repository";
 import OrderRepository from "../repositories/order.repository";
-import { CustomerData } from "../types/Customer";
+import OrderItemRepository from "../repositories/orderItem.repository";
+import { ConflictError } from "../types/ApplicationError";
 import { Flower } from "../types/Flower";
 import { OrderData, OrderItemData, OrderStatus } from "../types/orders";
 import { Pagination } from "../types/pagination";
@@ -10,53 +10,76 @@ export default class OrderService {
   currencyFormatter: Intl.NumberFormat;
   flowerRepository: FlowerRepository;
   orderRepository: OrderRepository;
+  orderItemRepository: OrderItemRepository;
   constructor() {
     this.currencyFormatter = new Intl.NumberFormat("en-US", {
       maximumSignificantDigits: 2,
     });
     this.flowerRepository = new FlowerRepository();
     this.orderRepository = new OrderRepository();
+    this.orderItemRepository = new OrderItemRepository();
   }
 
-  // async getCustomers(pagination: Pagination) {
-  //   return this.customerRepository.getCustomers(pagination);
-  // }
+  async getOrders(pagination: Pagination, customerId: string) {
+    return this.orderRepository.getOrders(pagination, customerId);
+  }
 
-  // async getOrder(id: string) {
-  //   return this.orderRepository.getOrder(id);
-  // }
+  async getOrder(id: string) {
+    const order = await this.orderRepository.getOrder(id);
+    order.items = await this.orderItemRepository.getOrderItemsByOrderId(
+      order.id
+    );
+    return order;
+  }
 
-  async addOrder(
-    orderData: Pick<OrderData, "customerId" | "createdBy">,
-    items: OrderItemData[]
-  ) {
-    // get flowers and calculate price
-    const flowerIds = items.map(({ flowerId }) => flowerId);
-    const flowers = await this.flowerRepository.getFlowersByIds(flowerIds);
-    const total = this.calculateOrderCost(items, flowers);
+  async addOrder(orderData: Omit<OrderData, "total">) {
+    const { items } = orderData;
 
-    const newOrder: OrderData = {
-      ...orderData,
-      total,
-      status: OrderStatus.PENDING,
-    };
+    // calc total cost of order
+    const total = await this.calculateOrderCost(items);
 
     // save order
-    const order = await this.orderRepository.addOrder(newOrder);
+    const order = await this.orderRepository.addOrder({
+      ...orderData,
+      total,
+    });
 
     // save order items
-    const orderItem = await this.orderRepository.addOrderItems(items, order.id);
-
-    order.items = orderItem;
+    order.items = await this.orderItemRepository.addOrderItems(items, order.id);
 
     return order;
   }
 
-  // async updateCustomer(id: string, customerData: CustomerData) {
-  //   return this.customerRepository.updateCustomer(id, customerData);
-  // }
+  async updateOrder(id: string, orderData: Omit<OrderData, "total">) {
+    const { items } = orderData;
+    // refuse request if order has been fulfilled or canceled.
+    const { status } = await this.getOrder(id);
+    if (status === OrderStatus.DELIVERED || status === OrderStatus.CANCELED) {
+      throw new ConflictError(
+        `You are not allowed to update order once status has been: ${status}`
+      );
+    }
 
-  private calculateOrderCost(items: OrderItemData[], flowers: Flower[]) {
+    // calc total cost of order
+    const total = await this.calculateOrderCost(orderData.items);
+
+    const order = await this.orderRepository.updateOrder(id, {
+      ...orderData,
+      total,
+    });
+
+    await this.orderItemRepository.deleteOrderItemsByOrderId(order.id);
+
+    order.items = await this.orderItemRepository.addOrderItems(items, order.id);
+
+    return order;
+  }
+
+  private async calculateOrderCost(items: OrderItemData[]) {
+    const flowers = await this.flowerRepository.getFlowersByIds(
+      items.map(({ flowerId }) => flowerId)
+    );
+
     let total = 0;
     items.forEach(({ flowerId, quantity }) => {
       const { price } = flowers.find((val) => val.id === flowerId) || {

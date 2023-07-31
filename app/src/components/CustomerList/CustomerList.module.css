@@ -1,0 +1,25 @@
+.tableHead {
+  display: flex;
+  justify-content: space-between;
+  align-self: center;
+}
+
+.edit {
+  margin-right: 7px;
+  font-size: 12px;
+}
+
+.delete {
+  font-size: 12px;
+}
+
+.noCustomer {
+  margin-top: 24px auto 0;
+  color: #c4c4c4;
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  text-transform: uppercase;
+  text-align: center;
+}

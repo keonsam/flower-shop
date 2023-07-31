@@ -9,17 +9,17 @@ export enum OrderStatus {
 
 export type Order = BusinessEntity & {
   customerId: string;
-  estimateDelivery?: string;
-  deliveredAt?: string;
+  customerName: string;
+  deliveryTime?: string;
   total: number;
   status: OrderStatus;
-  items?: OrderItem[];
+  items: OrderItem[];
 };
 
 export type OrderTable = BusinessEntityTable & {
   customer_id: string;
-  estimate_delivery: string;
-  delivered_at: string;
+  customerName: string;
+  delivery_time: string;
   total: number;
   status: OrderStatus;
 };
@@ -37,10 +37,7 @@ export type OrderItemData = {
 
 export type OrderData = Omit<Order, CreateOmit>;
 
-export type AddOrderRequest = {
-  customerId: string;
-  items: OrderItemData[];
-};
+export type AddOrderRequest = Omit<OrderData, "createdBy" | "total">;
 
 export type OrderItemTable = {
   flower_id: string;

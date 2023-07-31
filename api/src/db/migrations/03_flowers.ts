@@ -13,7 +13,7 @@ export async function up(knex: Knex): Promise<void> {
       .primary();
     table.string("name").notNullable();
     table.decimal("price").notNullable();
-    table.string("description");
+    table.text("description");
     table
       .timestamp("created_at", { useTz: true })
       .notNullable()

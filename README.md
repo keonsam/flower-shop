@@ -1,2 +1,2 @@
-**FLOWERS APP**
+**Flowers App**
 

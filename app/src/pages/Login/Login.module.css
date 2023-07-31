@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.form {
+  background: #fff;
+  width: 100%;
+  max-width: 550px;
+  padding: 24px;
+  border-radius: 10px;
+  /* margin: 0 auto; */
+}
+
+.header {
+  margin: 0 0 48px 0;
+}
+
+.buttonContainer {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formError {
+  padding-left: 9px;
+  color: red;
+  font-size: 14px;
+}

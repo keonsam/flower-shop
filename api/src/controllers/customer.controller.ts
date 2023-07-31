@@ -18,14 +18,15 @@ router.get(
   authenticate,
   authorization([Role.ADMIN]),
   async (req: Request, res: Response, next: NextFunction) => {
-    req.log.info("Get Customers");
+    req.log.info("Get Customers Request");
     try {
       const { query } = req;
 
       const pagination: Pagination = {
-        pageNumber: Number(query.pageNumber),
-        pageSize: Number(query.pageSize),
+        pageNumber: Number(query.pageNumber || 0),
+        pageSize: Number(query.pageSize || 0),
         sort: query.sort as Sort,
+        search: String(query.search || ""),
       };
 
       const customers = await customerService.getCustomers(pagination);
@@ -42,7 +43,7 @@ router.get(
   authenticate,
   authorization([Role.ADMIN]),
   async (req: Request, res: Response, next: NextFunction) => {
-    req.log.info("Get Customer");
+    req.log.info("Get Customer Request");
 
     try {
       const { params } = req;
@@ -62,10 +63,12 @@ router.post(
   authenticate,
   authorization([Role.ADMIN]),
   async (req: Request, res: Response, next: NextFunction) => {
-    req.log.info("Add Customer");
+    req.log.info("Add Customer Request");
 
     try {
       const { user, body } = req;
+
+      console.log({ user });
 
       const customerData: CustomerData = {
         ...body,

@@ -1,0 +1,14 @@
+.tableHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit {
+  margin-right: 7px;
+  font-size: 12px;
+}
+
+.delete {
+  font-size: 12px;
+}

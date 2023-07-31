@@ -1,0 +1,7 @@
+.table {
+  margin-top: 24px ;
+  background-color: #fff;
+  border: solid 1px grey;
+  border-radius: 10px;
+  width: 100%;
+}

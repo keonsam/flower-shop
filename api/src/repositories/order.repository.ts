@@ -1,38 +1,70 @@
 import { db } from "../db/dbConnection";
-import { ORDER_TABLE_NAME } from "../db/table_names";
-import logger from "../middleware/logger";
 import {
-  Order,
-  OrderData,
-  OrderItem,
-  OrderItemData,
-  OrderItemTable,
-  OrderTable,
-} from "../types/Orders";
+  CUSTOMER_TABLE_NAME,
+  ORDER_ITEM_TABLE_NAME,
+  ORDER_TABLE_NAME,
+} from "../db/table_names";
+import logger from "../middleware/logger";
+import { NotFoundError } from "../types/ApplicationError";
+import { Order, OrderData, OrderTable } from "../types/Orders";
 import { Pagination } from "../types/pagination";
+import CredentialRepository from "./credential.repository";
+import CustomerRepository from "./customer.repository";
 
 export default class OrderRepository {
-  // async getOrder() {
-  //   const [customer] = await db<CustomerTable>(CUSTOMER_TABLE_NAME)
-  //     .select("*")
-  //     .where({
-  //       id,
-  //     })
-  //     .limit(1);
+  async getOrders(pagination: Pagination, customerId: string) {
+    const { pageNumber, pageSize, sort } = pagination;
 
-  //   if (!customer) {
-  //     throw new NotFoundError(`No customer found for id: ${id}`);
-  //   }
+    // count number of rows
+    const [countObj] = await db<OrderTable>(ORDER_TABLE_NAME).count("id");
 
-  //   logger.info({ resultId: customer.id }, "Customer retrieved");
+    const total = Number(countObj.count || 0);
 
-  //   return this.mapDbEvent(customer);
-  // }
+    // get records
+    const orders = await db<OrderTable>(ORDER_TABLE_NAME)
+      .select("*")
+      .where((qb) => {
+        if (customerId) {
+          qb.where("customer_id", customerId)
+        }
+      })
+      .limit(pagination.pageSize || total)
+      .offset((pageNumber - 1) * pageSize || 0)
+      .orderBy("created_at", sort);
+
+    logger.info(
+      { id: orders[0]?.id, pageNumber, pageSize, sort },
+      "Orders retrieved"
+    );
+
+    return {
+      items: orders.map(this.mapDbOrder),
+      total,
+    };
+  }
+
+  async getOrder(id: string) {
+    const [order] = await db<OrderTable>(ORDER_TABLE_NAME)
+      .select("*")
+      .where({
+        id,
+      })
+      .limit(1);
+
+    if (!order) {
+      throw new NotFoundError(`No customer found for id: ${id}`);
+    }
+
+    logger.info({ resultId: order.id }, "Customer retrieved");
+
+    return this.mapDbOrder(order);
+  }
 
   async addOrder(orderData: OrderData) {
     const [order] = await db<OrderTable>(ORDER_TABLE_NAME)
       .insert({
         customer_id: orderData.customerId,
+        delivery_time: orderData.deliveryTime,
         total: orderData.total,
         status: orderData.status,
         created_by: orderData.createdBy,
@@ -44,46 +76,39 @@ export default class OrderRepository {
     return this.mapDbOrder(order);
   }
 
-  private mapDbOrder(dbOder: OrderTable): Order {
-    return {
-      id: dbOder.id,
-      customerId: dbOder.customer_id,
-      deliveredAt: dbOder.delivered_at,
-      estimateDelivery: dbOder.estimate_delivery,
-      status: dbOder.status,
-      total: dbOder.total,
-      createdAt: dbOder.created_at,
-      createdBy: dbOder.created_by,
-      updatedAt: dbOder.updated_at,
-    };
-  }
-
-  // Order Item
-
-  async addOrderItems(orderData: OrderItemData[], orderId: string) {
-    const data = orderData.map(({ flowerId, quantity }) => ({
-      flower_id: flowerId,
-      order_id: orderId,
-      quantity,
-    }));
-
-    const orderItems = await db<OrderItemTable>(ORDER_TABLE_NAME)
-      .insert(data)
+  async updateOrder(id: string, orderData: OrderData) {
+    const [order] = await db<OrderTable>(ORDER_TABLE_NAME)
+      .where({ id })
+      .update({
+        customer_id: orderData.customerId,
+        delivery_time: orderData.deliveryTime,
+        total: orderData.total,
+        status: orderData.status,
+      })
       .returning("*");
 
-    logger.info(
-      { flowerId: orderItems[0].flower_id, orderId: orderItems[0].order_id },
-      "Order Items created"
-    );
+    if (!order) {
+      throw new NotFoundError(`No order found for Id: ${id}`);
+    }
 
-    return orderItems.map(this.mapDbOrderItems);
+    logger.info({ id: order.id }, "Order updated");
+
+    return this.mapDbOrder(order);
   }
+  
 
-  private mapDbOrderItems(dbOderItem: OrderItemTable): OrderItem {
+  private mapDbOrder(dbOrder: OrderTable): Order {
     return {
-      flowerId: dbOderItem.flower_id,
-      orderId: dbOderItem.order_id,
-      quantity: dbOderItem.quantity,
+      id: dbOrder.id,
+      customerName: dbOrder.customerName,
+      items: [],
+      customerId: dbOrder.customer_id,
+      deliveryTime: dbOrder.delivery_time,
+      status: dbOrder.status,
+      total: dbOrder.total,
+      createdAt: dbOrder.created_at,
+      createdBy: dbOrder.created_by,
+      updatedAt: dbOrder.updated_at,
     };
   }
 }
