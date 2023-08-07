@@ -7,21 +7,22 @@ import Select from "../Select/Select";
 import { useFlowers } from "../../hooks/useFlowers";
 import { useEffect, useState } from "react";
 import TextField from "../TextField/TextField";
-import styles from "./OrderDetails.module.css";
+import styles from "./OrderForm.module.css";
 // import { calculateOrderCost } from "../../utils/orderUtils";
 import { useOrder } from "../../hooks/useOrder";
 import axiosClient from "../../config/axiosClient";
 import { useMutation } from "react-query";
 import { AxiosError } from "axios";
+import { calculateOrderCost } from "../../utils/orderUtils";
 
 type Props = {
-  customerId: string
+  customerId: string;
   mode: ModalMode;
   id: string;
   onClose: (update?: boolean) => void;
 };
 
-export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
+export default function OrderForm({ customerId, id, mode, onClose }: Props) {
   const { order } = useOrder(id);
   const [formError, setFormError] = useState("");
 
@@ -34,6 +35,7 @@ export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
     formState: { errors, isValid },
     setValue,
     getValues,
+    watch,
   } = useForm<OrderData>({
     mode: "onBlur",
     defaultValues: {
@@ -83,7 +85,6 @@ export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
 
   useEffect(() => {
     if (flowers?.length && !getValues("items").length) {
-      console.log("flowers rerender");
       append(
         flowers.map(({ id, name, price }) => ({
           flowerId: id,
@@ -97,9 +98,11 @@ export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
 
   useEffect(() => {
     if (order?.id) {
-      console.log("Order Details rerender");
       setValue("customerId", order.customerId);
-      setValue("deliveryTime", order.deliveryTime);
+      setValue(
+        "deliveryTime",
+        new Date(order.deliveryTime).toISOString().slice(0, 16)
+      );
       setValue("status", order.status);
       order.items?.forEach((item) => {
         const index = fields.findIndex(
@@ -110,11 +113,11 @@ export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
     }
   }, [order, setValue, fields]);
 
-  // const total = calculateOrderCost(watch("items"));
+  const total = calculateOrderCost(watch("items"));
 
   return (
     <Modal
-      title={mode === "edit" ? "Edit Customer Form" : "Create Customer"}
+      title={mode === "edit" ? "Edit Order" : "Create Order"}
       footer={
         <Footer
           disabled={isSaving || !isValid}
@@ -177,7 +180,7 @@ export default function OrderDetails({ customerId, id, mode, onClose }: Props) {
         )}
 
         <div className={styles.total}>
-          <h4 className={styles.totalText}>Total:</h4> <span>${0}</span>
+          <h4 className={styles.totalText}>Total:</h4> <span>${total}</span>
         </div>
       </form>
 

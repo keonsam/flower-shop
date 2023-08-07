@@ -56,6 +56,7 @@ router.get(
 
       const order = await orderService.getOrder(params.id);
 
+      console.log(order);
       res.status(200).json(order);
     } catch (error) {
       next(error);
@@ -110,6 +111,26 @@ router.put(
       const order = await orderService.updateOrder(params.id, orderData);
 
       res.status(200).json(order);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.delete(
+  "/orders/:id",
+  validate(idSchema, "params"),
+  authenticate,
+  authorization([Role.ADMIN]),
+  async (req: Request, res: Response, next: NextFunction) => {
+    req.log.info("Delete Order");
+
+    try {
+      const { params } = req;
+
+      const result = await orderService.deleteOrder(params.id);
+
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }

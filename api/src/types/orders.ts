@@ -9,7 +9,6 @@ export enum OrderStatus {
 
 export type Order = BusinessEntity & {
   customerId: string;
-  customerName: string;
   deliveryTime?: string;
   total: number;
   status: OrderStatus;
@@ -18,7 +17,6 @@ export type Order = BusinessEntity & {
 
 export type OrderTable = BusinessEntityTable & {
   customer_id: string;
-  customerName: string;
   delivery_time: string;
   total: number;
   status: OrderStatus;

@@ -2,7 +2,7 @@ import styles from "./Header.module.css";
 
 type Props = {
   title: string;
-  variant: "h1" | "h2" | "h3" | "h4" | "h6";
+  variant: "h1" | "h2" | "h3" | "h4" | "h5";
 };
 export default function Header({ title, variant = "h1" }: Props) {
   switch (variant) {
@@ -13,6 +13,8 @@ export default function Header({ title, variant = "h1" }: Props) {
     case "h3":
       return <h3 className={styles.headline3}>{title}</h3>;
     case "h4":
-      return <h3 className={styles.headline4}>{title}</h3>;
+      return <h4 className={styles.headline4}>{title}</h4>;
+    case "h5":
+      return <h5 className={styles.headline5}>{title}</h5>;
   }
 }

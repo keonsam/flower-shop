@@ -1,14 +1,14 @@
-.tableHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.container {
+  margin-top: 24px;
 }
 
 .edit {
-  margin-right: 7px;
-  font-size: 12px;
+  margin-right: 8px;
+  font-size: 14px;
+  color: #0090e0;
 }
 
 .delete {
-  font-size: 12px;
+  font-size: 14px;
+  color: #d64242;
 }

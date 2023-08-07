@@ -3,15 +3,23 @@ import styles from "./DeleteModal.module.css";
 import Footer from "../Footer/Footer";
 
 type Props = {
+  description: string;
   disabled?: boolean;
   onClose: (update?: boolean) => void;
   onDelete: () => void;
+  title: string;
 };
 
-const DeleteModal = ({ disabled = false, onClose, onDelete }: Props) => {
+const DeleteModal = ({
+  description,
+  disabled = false,
+  onClose,
+  onDelete,
+  title,
+}: Props) => {
   return (
     <Modal
-      title="Confirm Customer Deletion"
+      title={title}
       footer={
         <Footer
           disabled={disabled}
@@ -22,7 +30,7 @@ const DeleteModal = ({ disabled = false, onClose, onDelete }: Props) => {
         />
       }
     >
-      <div className={styles.container}></div>
+      <div className={styles.container}>{description}</div>
     </Modal>
   );
 };

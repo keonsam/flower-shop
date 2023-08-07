@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import styles from "./Table.module.css";
+import TableRow from "./TableRow";
 
 type Props = {
   columns: string[];
@@ -9,16 +10,19 @@ type Props = {
 // adhoc Table component
 export default function Table({ columns, children }: Props) {
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={column}>{column}</th>
-          ))}
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>{children}</tbody>
-    </table>
+    <div className={styles.container}>
+      <table className={styles.table} cellSpacing="0">
+        <thead>
+          <TableRow>
+            {columns.map((column) => (
+              <th className={styles.tableHeader} key={column}>
+                {column}
+              </th>
+            ))}
+          </TableRow>
+        </thead>
+        <tbody>{children}</tbody>
+      </table>
+    </div>
   );
 }

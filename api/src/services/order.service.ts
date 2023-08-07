@@ -2,26 +2,29 @@ import FlowerRepository from "../repositories/flower.repository";
 import OrderRepository from "../repositories/order.repository";
 import OrderItemRepository from "../repositories/orderItem.repository";
 import { ConflictError } from "../types/ApplicationError";
-import { Flower } from "../types/Flower";
 import { OrderData, OrderItemData, OrderStatus } from "../types/orders";
 import { Pagination } from "../types/pagination";
 
 export default class OrderService {
-  currencyFormatter: Intl.NumberFormat;
   flowerRepository: FlowerRepository;
   orderRepository: OrderRepository;
   orderItemRepository: OrderItemRepository;
   constructor() {
-    this.currencyFormatter = new Intl.NumberFormat("en-US", {
-      maximumSignificantDigits: 2,
-    });
     this.flowerRepository = new FlowerRepository();
     this.orderRepository = new OrderRepository();
     this.orderItemRepository = new OrderItemRepository();
   }
 
   async getOrders(pagination: Pagination, customerId: string) {
-    return this.orderRepository.getOrders(pagination, customerId);
+    const orders = await this.orderRepository.getOrders(pagination, customerId);
+
+    for (const order of orders.items) {
+      order.items = await this.orderItemRepository.getOrderItemsByOrderId(
+        order.id
+      );
+    };
+
+    return orders;
   }
 
   async getOrder(id: string) {
@@ -75,6 +78,10 @@ export default class OrderService {
     return order;
   }
 
+  async deleteOrder(id: string) {
+    return this.orderRepository.deleteOrder(id);
+  }
+
   private async calculateOrderCost(items: OrderItemData[]) {
     const flowers = await this.flowerRepository.getFlowersByIds(
       items.map(({ flowerId }) => flowerId)
@@ -85,8 +92,8 @@ export default class OrderService {
       const { price } = flowers.find((val) => val.id === flowerId) || {
         price: 0,
       };
-      const itemCost = Number(this.currencyFormatter.format(price * quantity));
-      total = Number(this.currencyFormatter.format(total + itemCost));
+      const itemCost = Math.floor(price * quantity * 100) / 100;
+      total = Math.floor((total + itemCost) * 100) / 100;
     });
 
     return total;

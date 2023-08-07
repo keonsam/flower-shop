@@ -1,15 +1,11 @@
 import { db } from "../db/dbConnection";
 import {
-  CUSTOMER_TABLE_NAME,
-  ORDER_ITEM_TABLE_NAME,
   ORDER_TABLE_NAME,
 } from "../db/table_names";
 import logger from "../middleware/logger";
 import { NotFoundError } from "../types/ApplicationError";
 import { Order, OrderData, OrderTable } from "../types/Orders";
 import { Pagination } from "../types/pagination";
-import CredentialRepository from "./credential.repository";
-import CustomerRepository from "./customer.repository";
 
 export default class OrderRepository {
   async getOrders(pagination: Pagination, customerId: string) {
@@ -25,7 +21,7 @@ export default class OrderRepository {
       .select("*")
       .where((qb) => {
         if (customerId) {
-          qb.where("customer_id", customerId)
+          qb.where("customer_id", customerId);
         }
       })
       .limit(pagination.pageSize || total)
@@ -80,7 +76,6 @@ export default class OrderRepository {
     const [order] = await db<OrderTable>(ORDER_TABLE_NAME)
       .where({ id })
       .update({
-        customer_id: orderData.customerId,
         delivery_time: orderData.deliveryTime,
         total: orderData.total,
         status: orderData.status,
@@ -95,12 +90,22 @@ export default class OrderRepository {
 
     return this.mapDbOrder(order);
   }
-  
+
+  async deleteOrder(id: string) {
+    const result = await db<OrderTable>(ORDER_TABLE_NAME)
+      .where({
+        id,
+      })
+      .del();
+
+    logger.info({ result }, "Order deleted");
+
+    return result;
+  }
 
   private mapDbOrder(dbOrder: OrderTable): Order {
     return {
       id: dbOrder.id,
-      customerName: dbOrder.customerName,
       items: [],
       customerId: dbOrder.customer_id,
       deliveryTime: dbOrder.delivery_time,

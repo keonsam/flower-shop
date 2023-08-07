@@ -28,13 +28,21 @@ export const useCustomers = ({
     query.push(`search=${search}`);
   }
 
-  const { data, isLoading, refetch } = useQuery("customers", async () => {
-    return axiosClient.get<Customers>(`/customers?${query.join("&")}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-  });
+  const queryStr = query.join("&");
+
+  const { data, isLoading, refetch } = useQuery(
+    ["customers", queryStr],
+    async () => {
+      return axiosClient.get<Customers>(`/customers?${queryStr}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    },
+    {
+      keepPreviousData: true,
+    }
+  );
 
   return {
     customers: data?.data,

@@ -29,9 +29,9 @@ type DeleteModal = {
 };
 
 export default function CustomerList() {
-  const { token} = useAuth();
-  const [pageNumber, setPageNumber] = useState(0);
-  const { customers, refetch } = useCustomers({pageNumber, pageSize: 5});
+  const { token } = useAuth();
+  const [pageNumber, setPageNumber] = useState(1);
+  const { customers, refetch } = useCustomers({ pageNumber, pageSize: 5 });
   const navigate = useNavigate();
   const [customerModal, setCustomerModal] = useState<CustomerModal>({
     id: "",
@@ -48,8 +48,8 @@ export default function CustomerList() {
     (id: string) => {
       return axiosClient.delete<number>(`/customers/${id}`, {
         headers: {
-        Authorization: `Bearer ${token}`
-      }
+          Authorization: `Bearer ${token}`,
+        },
       });
     },
     {
@@ -63,70 +63,71 @@ export default function CustomerList() {
     }
   );
 
-  const handleCustomer = (e: React.MouseEvent<HTMLTableRowElement, MouseEvent>, id: string) => {
-    e.stopPropagation();
-    navigate(`${id}`)
-  }
-
   return (
-    <>
+    <div className={styles.customerList}>
       <div className={styles.tableHead}>
-        <Header variant="h2" title="Customers"/>
-              <Button
-        label="Create Customer"
-        size="medium"
-        onClick={() =>
-          setCustomerModal({
-            id: "",
-            mode: "create",
-            show: true,
-          })
-        }
-      />
+        <Header variant="h2" title="Customers" />
+        <Button
+          label="Create Customer"
+          size="medium"
+          onClick={() =>
+            setCustomerModal({
+              id: "",
+              mode: "create",
+              show: true,
+            })
+          }
+        />
       </div>
 
       {customers?.items.length ? (
-        <Table columns={["Name", "Email", "Phone Number", "Address"]}>
-          {customers?.items.map(({ id, name, email, phoneNumber, location }) => (
-            <TableRow key={id} onClick={(e) => handleCustomer(e, id)}>
-              <TableCell>{name}</TableCell>
-              <TableCell>{email}</TableCell>
-              <TableCell>{phoneNumber}</TableCell>
-              <TableCell>{location}</TableCell>
-              <TableCell>
-                <FontAwesomeIcon
-                  icon={faPencil}
-                  className={styles.edit}
-                  onClick={() =>
-                    setCustomerModal(() => ({
-                      id,
-                      mode: "edit",
-                      show: true,
-                    }))
-                  }
-                />
-                <FontAwesomeIcon
-                  icon={faTrash}
-                  className={styles.delete}
-                  onClick={() =>
-                    setDeleteModal({
-                      id,
-                      show: true,
-                    })
-                  }
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+        <Table columns={["Name", "Email", "Phone Number", "Address", "Action"]}>
+          {customers?.items.map(
+            ({ id, name, email, phoneNumber, location }) => (
+              <TableRow key={id} onClick={() => navigate(`${id}`)}>
+                <TableCell>{name}</TableCell>
+                <TableCell>{email}</TableCell>
+                <TableCell>{phoneNumber}</TableCell>
+                <TableCell>{location}</TableCell>
+                <TableCell>
+                  <FontAwesomeIcon
+                    icon={faPencil}
+                    className={styles.edit}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCustomerModal(() => ({
+                        id,
+                        mode: "edit",
+                        show: true,
+                      }));
+                    }}
+                  />
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    className={styles.delete}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteModal({
+                        id,
+                        show: true,
+                      });
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            )
+          )}
         </Table>
-      ) : <p className={styles.noCustomer}> No Customers</p>}
+      ) : (
+        <p className={styles.noCustomer}> No Customers</p>
+      )}
 
       <Pagination
-      total={customers?.total || 0}
-      pageNumber={pageNumber}
-      prev={() => setPageNumber( pageNumber - 1)}
-      next={() => setPageNumber( pageNumber + 1)}
-      setPage={(page) => setPageNumber( page - 1)}
+        total={customers?.total || 0}
+        pageNumber={pageNumber}
+        prev={() => setPageNumber(pageNumber - 1)}
+        next={() => setPageNumber(pageNumber + 1)}
+        setPage={(page) => setPageNumber(page)}
       />
 
       {customerModal.show && (
@@ -149,6 +150,7 @@ export default function CustomerList() {
 
       {deleteModal.show && (
         <DeleteModal
+          description="Are you sure you want to delete this customer? This action cannot be undone."
           disabled={isDeleting}
           onClose={() =>
             setDeleteModal({
@@ -157,8 +159,9 @@ export default function CustomerList() {
             })
           }
           onDelete={() => mutate(deleteModal.id)}
+          title="Delete Customer"
         />
       )}
-    </>
+    </div>
   );
 }

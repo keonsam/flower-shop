@@ -1,7 +1,21 @@
+.container {
+  min-height: 307px;
+}
+
 .table {
-  margin-top: 24px ;
-  background-color: #fff;
-  border: solid 1px grey;
-  border-radius: 10px;
   width: 100%;
+  border-spacing:0; /* Removes the cell spacing via CSS */
+  border-collapse: collapse;  /* Optional - if you don't want to have double border where cells touch */
+}
+
+.tableHeader {
+  font-weight: normal;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  border-bottom: solid 1px #274d76;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #ebeff5;
 }

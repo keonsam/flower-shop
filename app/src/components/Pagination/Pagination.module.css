@@ -5,10 +5,21 @@
   gap: 8px;
 }
 
-.button {
-  font-size: 18px;
-  color: #6b6c7e;
-  border-radius: 50%;
+.paginationControls {
+  background: transparent;
   border: none;
-  background: #e7e7ed;
+  font-size: 16px;
+  outline: none;
+}
+
+.paginationNumbers {
+  border: none;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  outline: none;
+}
+
+.active {
+  background: #f2f2f2;
 }
