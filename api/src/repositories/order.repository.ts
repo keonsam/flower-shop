@@ -110,7 +110,7 @@ export default class OrderRepository {
       customerId: dbOrder.customer_id,
       deliveryTime: dbOrder.delivery_time,
       status: dbOrder.status,
-      total: dbOrder.total,
+      total: Number(dbOrder.total),
       createdAt: dbOrder.created_at,
       createdBy: dbOrder.created_by,
       updatedAt: dbOrder.updated_at,

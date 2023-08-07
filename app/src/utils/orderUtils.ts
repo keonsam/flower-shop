@@ -20,17 +20,22 @@ export const calcStats = (orders?: Order[], flowers?: Flower[]) => {
   // Rose, Lily, Tulip, Orchid, Carnation
   const ordersByFlowers = [0, 0, 0, 0, 0, 0];
 
+  let totalSales = 0;
+
   if (!orderByDaysOfWeek || !flowers) {
     return {
       orderByDaysOfWeek,
       ordersByFlowers,
+      totalSales,
     };
   }
 
   if (orders) {
-    orders.forEach(({ deliveryTime, items }) => {
+    orders.forEach(({ deliveryTime, items, total }) => {
       const day = new Date(deliveryTime).getDay();
       orderByDaysOfWeek[day]++;
+
+      totalSales = Math.floor((totalSales + Number(total)) * 100) / 100;
 
       if (items) {
         items.forEach(({ flowerId }) => {
@@ -61,5 +66,9 @@ export const calcStats = (orders?: Order[], flowers?: Flower[]) => {
   return {
     orderByDaysOfWeek,
     ordersByFlowers,
+    totalSales,
   };
 };
+
+
+

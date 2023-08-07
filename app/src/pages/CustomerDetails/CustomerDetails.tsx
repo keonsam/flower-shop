@@ -8,10 +8,25 @@ import Button from "../../components/Button/Button";
 import { useState } from "react";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { createPdf } from "pdfmake/build/pdfmake";
+import { customerOrderDocDefinition } from "../../utils/pdfUtiils";
+import { useOrders } from "../../hooks/useOrders";
 
+const fonts = {
+  Roboto: {
+    normal:
+      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf",
+    bold: "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf",
+    italics:
+      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf",
+    bolditalics:
+      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf",
+  },
+};
 export default function CustomerDetails() {
   const { id } = useParams();
   const { customer } = useCustomer(id);
+  const { orders } = useOrders({}, customer?.id);
   const [orderModal, setOrderModal] = useState<OrderModal>({
     id: "",
     mode: "create",
@@ -29,28 +44,29 @@ export default function CustomerDetails() {
           <Header variant="h2" title="Customer" />
 
           <div className={styles.headerIcons}>
-          <Button
-            label="Create Order"
-            size="medium"
-            onClick={() =>
-              setOrderModal({
-                id: "",
-                mode: "create",
-                show: true,
-              })
-            }
-          />
+            <Button
+              label="Create Order"
+              size="medium"
+              onClick={() =>
+                setOrderModal({
+                  id: "",
+                  mode: "create",
+                  show: true,
+                })
+              }
+            />
 
-          <FontAwesomeIcon
-            icon={faDownload}
-            className={styles.download}
-            // onClick={() =>
-            //   setDeleteModal({
-            //     id,
-            //     show: true,
-            //   })
-            // }
-          />
+            <FontAwesomeIcon
+              icon={faDownload}
+              className={styles.download}
+              onClick={() =>
+                createPdf(
+                  customerOrderDocDefinition(customer, orders?.items || []),
+                  undefined,
+                  fonts
+                ).download(`customer-info-${customer.name}-${new Date().getTime()}.pdf`)
+              }
+            />
           </div>
         </div>
         <div className={styles.details}>

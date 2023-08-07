@@ -62,6 +62,13 @@ export default function Dashboard() {
             </div>
             <p className={styles.numOfData}>{orders?.total || 0}</p>
           </div>
+
+          <div className={styles.item}>
+            <div>
+              <Header variant="h5" title="Total Sales" />
+            </div>
+            <p className={styles.numOfData}>{stats.totalSales}</p>
+          </div>
         </div>
 
         {/* TODO: Number of orders by days of the week */}
@@ -89,6 +96,13 @@ export default function Dashboard() {
                       },
                     ],
                   }}
+                  options={{
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                      },
+                    },
+                  }}
                 />
               )}
             </div>
@@ -106,6 +120,10 @@ export default function Dashboard() {
                         data: stats.ordersByFlowers,
                       },
                     ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: true,
                   }}
                 />
               )}
