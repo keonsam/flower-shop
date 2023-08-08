@@ -5,6 +5,7 @@ import jwt from "jwt-decode";
 const initialUser = {
   role: Role.USER,
   credentialId: "",
+  exp: new Date().getTime(),
 };
 const initial = {
   isLogIn: () => false,
@@ -32,35 +33,36 @@ const tokenKey = "flowersApp-jwtToken";
 
 const AuthProvider = ({ children }: Props) => {
   const [token, setToken] = useState(localStorage.getItem(tokenKey) || "");
-  const [user, setUser] = useState<User>(token ? jwt(token): initialUser);
+  const [user, setUser] = useState<User>(token ? jwt(token) : initialUser);
 
   const isLogIn = () => {
-    return !!token && !!user.credentialId;
+    console.log(user.exp);
+    console.log(new Date().getTime())
+    return !!token && !!user.credentialId && (user.exp * 1000) > Date.now();
   };
 
   const logIn = (auth: string) => {
     setToken(auth);
-    setUser(jwt(auth))
+    setUser(jwt(auth));
     localStorage.setItem(tokenKey, auth);
   };
 
   const logOut = () => {
     setToken("");
-    setUser(initialUser)
+    setUser(initialUser);
     localStorage.removeItem(tokenKey);
     token;
-  }
+  };
 
   return (
     <AuthContext.Provider value={{ isLogIn, logIn, logOut, user, token }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 const useAuth = () => {
   return useContext(AuthContext);
-} 
-
+};
 
 export { AuthProvider, useAuth };

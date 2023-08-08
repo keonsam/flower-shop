@@ -25,7 +25,7 @@ router.get(
       const pagination: Pagination = {
         pageNumber: Number(query.pageNumber || 0),
         pageSize: Number(query.pageSize || 0),
-        sort: query.sort as Sort || 'asc',
+        sort: query.sort as Sort || 'desc',
         search: String(query.search || ""),
       };
 

@@ -14,6 +14,7 @@ import axiosClient from "../../config/axiosClient";
 import { useMutation } from "react-query";
 import { AxiosError } from "axios";
 import { calculateOrderCost } from "../../utils/orderUtils";
+import { useAuth } from "../../context/AuthContext";
 
 type Props = {
   customerId: string;
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function OrderForm({ customerId, id, mode, onClose }: Props) {
+  const { token } = useAuth();
   const { order } = useOrder(id);
   const [formError, setFormError] = useState("");
 
@@ -54,9 +56,17 @@ export default function OrderForm({ customerId, id, mode, onClose }: Props) {
   const { isLoading: isSaving, mutate } = useMutation(
     (orderData: OrderData) => {
       if (id) {
-        return axiosClient.put<Order>(`/orders/${id}`, orderData);
+        return axiosClient.put<Order>(`/orders/${id}`, orderData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
       }
-      return axiosClient.post<Order>("/orders", orderData);
+      return axiosClient.post<Order>("/orders", orderData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     },
     {
       onError: (err) => {

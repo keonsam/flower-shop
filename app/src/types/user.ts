@@ -6,4 +6,5 @@ export enum Role {
 export type User = {
   role: Role;
   credentialId: string;
+  exp: number;
 };

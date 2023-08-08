@@ -17,6 +17,7 @@ import DeleteModal from "../DeleteModal/DeleteModal";
 import axiosClient from "../../config/axiosClient";
 import { useMutation } from "react-query";
 import OrderForm from "../OrderForm/OrderForm";
+import { useAuth } from "../../context/AuthContext";
 
 type DeleteModal = {
   id: string;
@@ -40,6 +41,7 @@ export default function OrderList({
   orderModal,
   setOrderModal,
 }: Props) {
+  const { token } = useAuth();
   const [pageNumber, setPageNumber] = useState(1);
   const { orders, refetch } = useOrders(
     { pageNumber, pageSize: 5 },
@@ -53,7 +55,11 @@ export default function OrderList({
 
   const { isLoading: isDeleting, mutate } = useMutation(
     (id: string) => {
-      return axiosClient.delete<number>(`/orders/${id}`);
+      return axiosClient.delete<number>(`/orders/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     },
     {
       // TODO: error handling

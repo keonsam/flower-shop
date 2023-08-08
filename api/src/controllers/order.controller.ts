@@ -1,11 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { authenticate } from "../middleware/authentication";
 import { validate } from "../middleware/validation";
-import {
-  getCustomersSchema,
-  idSchema,
-  orderSchema,
-} from "../types/schema";
+import { getCustomersSchema, idSchema, orderSchema } from "../types/schema";
 import { authorization } from "../middleware/authorization";
 import { Role } from "../types/credential";
 import OrderService from "../services/order.service";
@@ -29,11 +25,11 @@ router.get(
       const pagination: Pagination = {
         pageNumber: Number(query.pageNumber),
         pageSize: Number(query.pageSize),
-        sort: query.sort as Sort,
+        sort: (query.sort as Sort) || "desc",
         search: String(query.search || ""),
       };
 
-      const customerId = String(query.customerId || "")
+      const customerId = String(query.customerId || "");
 
       const customers = await orderService.getOrders(pagination, customerId);
       res.status(200).json(customers);
